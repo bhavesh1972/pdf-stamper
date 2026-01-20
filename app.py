@@ -21,22 +21,27 @@ STAMP_HEIGHT = 60
 
 def add_sign_and_stamp(input_pdf_bytes, sign_img_path, stamp_img_path):
     doc = fitz.open(stream=input_pdf_bytes, filetype="pdf")
-    search_term = ["TnC Engg", "TnC Engineer"]
+    
+    # 1. Define your list of possible search terms
+    search_terms = ["TnC Engg", "TnC Engineer"]
     found_locations = 0
 
     for page in doc:
-        text_instances = page.search_for(search_term)
-        for rect in text_instances:
+        # 2. Create a list to hold all instances found for all terms on this page
+        all_instances = []
+        for term in search_terms:
+            all_instances.extend(page.search_for(term))
+        
+        # 3. Process every location found
+        for rect in all_instances:
             found_locations += 1
             
             # --- Signature Logic ---
-            # rect.x0 is left of text, rect.y1 is bottom of text
             s_x = rect.x0 + SIGN_OFFSET_X
             s_y = rect.y1 + SIGN_OFFSET_Y
             sign_rect = fitz.Rect(s_x, s_y, s_x + SIGN_WIDTH, s_y + SIGN_HEIGHT)
             
             # --- Stamp Logic ---
-            # We position the stamp relative to the same anchor
             m_x = rect.x0 + STAMP_OFFSET_X
             m_y = rect.y1 + STAMP_OFFSET_Y
             stamp_rect = fitz.Rect(m_x, m_y, m_x + STAMP_WIDTH, m_y + STAMP_HEIGHT)
@@ -50,7 +55,7 @@ def add_sign_and_stamp(input_pdf_bytes, sign_img_path, stamp_img_path):
     output_buffer = io.BytesIO()
     doc.save(output_buffer)
     doc.close()
-    return output_buffer.getvalue(), found_locations
+    return output_buffer.getvalue(), found_locations, found_locations
 
 # --- WEB PAGE ---
 st.set_page_config(page_title="PDF Auto-Stamp", page_icon="📝")
@@ -72,3 +77,4 @@ if uploaded_file:
             except Exception as e:
 
                 st.error(f"Error: {e}")
+
