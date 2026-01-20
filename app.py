@@ -21,7 +21,7 @@ STAMP_HEIGHT = 60
 
 def add_sign_and_stamp(input_pdf_bytes, sign_img_path, stamp_img_path):
     doc = fitz.open(stream=input_pdf_bytes, filetype="pdf")
-    search_term = "TnC Engg"
+    search_term = ["TnC Engg", "TnC Engineer"]
     found_locations = 0
 
     for page in doc:
@@ -70,4 +70,5 @@ if uploaded_file:
                 else:
                     st.error(f"Search text 'TnC Engg' not found.")
             except Exception as e:
+
                 st.error(f"Error: {e}")
